@@ -1,0 +1,307 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{xspace}
+\usepackage[usenames]{color}
+
+\DeclareMathOperator*{\E}{\mathbb{E}}
+\let\Pr\relax
+\DeclareMathOperator*{\Pr}{\mathbb{P}}
+
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\inprod}[1]{\left\langle #1 \right\rangle}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\eqdef}{\mathbin{\stackrel{\rm def}{=}}}
+\newcommand{\lts}{\mathbin{\substack{<\\ *}}\xspace}
+\newcommand{\gts}{\mathbin{\substack{>\\ *}}\xspace}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{todo:} \textit{#1}}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+\newtheorem{claim}{Claim}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newcommand{\Figure}[1]{Figure~\ref{fig:#1}}
+\newtheorem{question}{Question}
+
+\newcommand{\EquationName}[1]{\label{eq:#1}}
+\newcommand{\ClaimName}[1]{\label{clm:#1}}
+\newcommand{\LemmaName}[1]{\label{lem:#1}}
+\newcommand{\CorollaryName}[1]{\label{cor:#1}}
+\newcommand{\SectionName}[1]{\label{sec:#1}}
+\newcommand{\TheoremName}[1]{\label{thm:#1}}
+\newcommand{\RemarkName}[1]{\label{rem:#1}}
+\newcommand{\FigureName}[1]{\label{fig:#1}}
+\newcommand{\QuestionName}[1]{\label{que:#1}}
+
+\newcommand{\Equation}[1]{Eq.\:\eqref{eq:#1}}
+\newcommand{\Claim}[1]{Claim~\ref{clm:#1}}
+\newcommand{\Lemma}[1]{Lemma~\ref{lem:#1}}
+\newcommand{\Corollary}[1]{Corollary~\ref{cor:#1}}
+\newcommand{\Section}[1]{Section~\ref{sec:#1}}
+\newcommand{\Theorem}[1]{Theorem~\ref{thm:#1}}
+\newcommand{\Remark}[1]{Remark~\ref{rem:#1}}
+\newcommand{\Question}[1]{Question~\ref{que:#1}}
+
+\newcommand{\Eqsub}[1]{\eqref{eq:#1}}
+
+\author{Jelani Nelson\\{}\texttt{minilek@seas.harvard.edu}}
+
+\title{Dimensionality Reduction --- Notes 1}
+
+\date{August 10, 2015}
+
+\begin{document}
+
+\maketitle
+
+\section{Preliminaries}
+
+Here we collect some notation and basic lemmas used throughout this note.
+
+Throughout, for a random variable $X$, $\|X\|_p$ denotes $(\E|X|^p)^{1/p}$. It is known that $\|\cdot\|_p$ is a norm for any $p\ge 1$ (Minkowski's inequality). It is also known $\|X\|_p \le \|X\|_q$ whenever $p\le q$. Henceforth, whenever we discuss $\|\cdot\|_p$, we will assume $p\ge 1$.
+
+\begin{lemma}[Khintchine inequality]
+For any $p\ge 1$, $x\in\R^n$, and $(\sigma_i)$ independent Rademachers,
+$$
+\|\sum_i \sigma_i x_i\|_p \lesssim \sqrt{p}\cdot \|x\|_2
+$$
+\end{lemma}
+\begin{proof}
+  Without loss of generality we can assume $p$ is an even integer. Consider $(g_i)$ independent gaussians of mean zero and variance 1. Expand $\E (\sum_i \sigma_i x_i)^p$ into a sum of monomials. Any monomial with odd exponents vanishes, as in the gaussian case. Meanwhile other monomials are nonnegative with all Rademacher moments being $1$, while in the gaussian case the moments are at least $1$. Thus the Rademacher case is term-by-term dominated by the gaussian case and $\|\sum_i \sigma_i x_i\|_p \le \|\sum_i g_i x_i\|_p$. But $\sum_i g_i x_i$ is a gaussian with mean zero and variance $\|x\|_2^2$, and hence its $p$-norm is $\|x\|_2 \cdot (p! / (2^{p/2} (p/2)!))^{1/p}$.
+\end{proof}
+
+We often use Jensen's inequality below, especially for $F(x) = |x|^p$ ($p\ge 1$).
+
+\begin{lemma}[Jensen's inequality]
+For $F$ convex, $F(\E X) \le \E F(X)$.
+\end{lemma}
+
+Before proving a couple concentration inequalities, we prove a lemma now which lets us freely obtain tail bounds from moment bounds and vice versa (often we prove a moment bound and later invoke a tail bound, or vice versa, without even mentioning any justification).
+
+\begin{lemma}\LemmaName{byparts}
+Let $Z$ be a scalar random variable. Consider the following statements:
+\begin{enumerate}
+\item[(1a)] There exists $\sigma>0$ s.t.\ $\forall p\ge 1$, $\|Z\|_p \le C_1 \sigma\sqrt{p}$.
+\item[(1b)] There exists $\sigma>0$ s.t.\ $\forall \lambda > 0$, $\Pr(|Z| > \lambda) \le C_2 e^{-C_2'\lambda^2/\sigma^2}$.
+\item[(2a)] There exists $K>0$ s.t.\ $\forall p\ge 1$, $\|Z\|_p \le C_3 Kp$.
+\item[(2b)] There exists $K>0$ s.t.\ $\forall\ \lambda > 0$, $\Pr(|Z| > \lambda) \le C_4 e^{-C_4'\lambda/K}$.
+\item[(3a)] There exist $\sigma, K>0$ s.t.\ $\forall\ p\ge 1$, $\|Z\|_p \le C_5 (\sigma\sqrt{p} + Kp)$.
+\item[(3b)] There exist $\sigma, K>0$ s.t.\ $\forall\ \lambda > 0$, $\Pr(|Z| > \lambda) \le C_6 (e^{-C_6'\lambda^2/\sigma^2} + e^{-C_6'\lambda/K})$.
+\end{enumerate}
+Then 1a is equivalent to 1b, 2a is equivalent to 2b, and 3a is equivalent to 3b, where the constants $C_i, C_i'$ in each case change by at most some absolute constant factor.
+\end{lemma}
+\begin{proof}
+We will show only that 1a is equivalent to 1b; the other cases are argued identically.
+
+To show that 1a implies 1b, by Markov's inequality
+$$
+\Pr(Z > \lambda) \le \lambda^{-p} \cdot \E|Z|^p \le \left(\frac{C_1^2 \sigma^2}{\lambda^2 p}\right)^{p/2} .
+$$
+Statement 1b follows by choosing $p = \max\{1, 2C_1^2\lambda^2/\sigma^2\}$.
+
+To show that 1b implies 1a, by integration by parts we have
+$$
+\E|Z|^p = \int_0^\infty px^{p-1} \Pr(|Z| > \lambda) d\lambda \le 2C_2 p \cdot \int_0^\infty px^{p-1} \cdot e^{-C_2'\lambda^2/\sigma^2} d\lambda.
+$$
+The integral on the right hand side is exactly the $p$th moment of a gaussian random variable with mean zero and variance $\sigma'^2 = \sigma^2 / (2C_2')$. Statement 1a then follows since such a gaussian has $p$-norm $\Theta(\sigma' \sqrt{p})$.
+\end{proof}
+
+Now, the following is a bread-and-butter trick for bounding $p$th moments of sums of independent random variables. A more general version of this lemma can be found as Lemma 6.3 in \cite{LedouxT91}.
+
+\begin{lemma}[Symmetrization / Desymmetrization] \LemmaName{symmetrization}
+Let $Z_1,\ldots,Z_n$ be independent random variables. Let $r_1,\ldots,r_n$ be independent Rademachers. Then
+$$
+\|\sum_i Z_i - \E\sum_i Z_i\|_p \le 2\cdot \|\sum_i r_i Z_i\|_p \text{ (symmetrization inequality)}
+$$
+and
+$$
+(1/2)\cdot \|\sum_i r_i (Z_i - \E Z_i)\|_p \le \|\sum_i Z_i\|_p \text{ (desymmetrization inequality)} .
+$$
+\end{lemma}
+\begin{proof}
+For the first inequality, let $Y_1,\ldots,Y_n$ be independent of the $Z_i$ but identically distributed to them. Then
+\begin{align}
+\nonumber \|\sum_i Z_i - \E\sum_i Z_i\|_p &= \|\sum_i Z_i - \E_Y \sum_i Y_i\|_p \\
+\nonumber {}& \le \|\sum_i (Z_i - Y_i)\|_p \text{ (Jensen)}\\
+{}& = \|\sum_i r_i (Z_i - Y_i)\|_p \EquationName{symmetrization1}\\
+\nonumber {}& \le 2\cdot \|\sum_i r_i X_i\|_p\text{ (triangle inequality)}
+\end{align}
+\Eqsub{symmetrization1} follows since the $X_i - Y_i$ are independent across $i$ and symmetric.
+
+For the second inequality, let $Y_i$ be as before. Then
+\begin{align*}
+\|\sum_i r_i (Z_i - \E Z_i)\|_p &= \|\E_Y \sum_i r_i (Z_i - Y_i)\|_p\\
+{}& \le \|\sum_i r_i (Z_i - Y_i)\|_p \text{ (Jensen)}\\
+{}& = \|\sum_i (Z_i - Y_i)\|_p\\
+{}&\le 2\cdot \|\sum_i Z_i\|_p \text{ (triangle inequality)}
+\end{align*}
+\end{proof}
+
+\begin{lemma}[Decoupling {\cite{PenaG99}}]\LemmaName{decoupling}
+Let $x_1,\ldots,x_n$ be independent and mean zero, and $x_1',\ldots,x_n'$ identically distributed as the $x_i$ and independent of them. Then for any $(a_{i,j})$ and for all $p\ge 1$
+$$
+\|\sum_{i\neq j} a_{i,j} x_i x_j\|_p \le 4 \|\sum_{i,j} a_{i ,j} x_i x_j'\|_p
+$$
+\end{lemma}
+\begin{proof}
+Let $\eta_1,\ldots,\eta_n$ be independent Bernoulli random variables each of expectation $1/2$. Then
+\begin{align}
+\nonumber \|\sum_{i\neq j} a_{i,j} x_i x_j\|_p &= 4\cdot \|\E_\eta \sum_{i\neq j} a_{i,j} x_i x_j |\eta_i| |1-\eta_j|\|_p\\
+{}&\le 4\cdot \|\sum_{i\neq j} a_{i,j} x_i x_j \eta_i (1-\eta_j)\|_p \text{ (Jensen)}\EquationName{decouple-averaging}
+\end{align}
+Hence there must be some fixed vector $\eta'\in\{0,1\}^n$ which achieves
+$$
+\|\sum_{i\neq j} a_{i,j} x_i x_j \eta_i (1-\eta_j)\|_p\le \|\sum_{i\in S}\sum_{j\notin S} a_{i,j} x_i x_j\|_p
+$$
+where $S = \{ i : \eta'_i = 1\}$. Let $x_S$ denote the $|S|$-dimensional vector corresponding to the $x_i$ for $i\in S$.  Then
+\begin{align*}
+\|\sum_{i\in S}\sum_{j\notin S} a_{i,j} x_i x_j\|_p &= \|\sum_{i\in S}\sum_{j\notin S} a_{i,j} x_i x_j'\|_p\\
+{}& = \|\E_{x_S}\E_{x'_{\bar{S}}}\sum_{i, j}a_{i,j} x_i x_j'\|_p\text{ (}\E x_i = \E x'_j = 0\text{)}\\
+{}&\le \|\sum_{i, j}a_{i,j} x_i x_j'\|_p\text{ (Jensen)}
+\end{align*}
+\end{proof}
+
+The following proof of the Hanson-Wright was shared to me by Sjoerd Dirksen (personal communication).
+
+\begin{theorem}[Hanson-Wright inequality {\cite{HansonW71}}]\TheoremName{hw}
+For $\sigma_1,\ldots,\sigma_n$ independent Rademachers and $A\in\R^{n\times n}$ real and symmetric, for all $p\ge 1$
+$$
+\|\sigma^T A \sigma - \E \sigma^T A \sigma\|_p \lesssim \sqrt{p} \cdot \|A\|_F + p\cdot \|A\| .
+$$
+\end{theorem}
+\begin{proof}
+Without loss of generality we assume in this proof that $p\ge 2$ (so that $p/2 \ge 1$). Then
+\allowdisplaybreaks
+\begin{align}
+\|\sigma^T A \sigma &- \E \sigma^T A \sigma\|_p \lesssim \|\sigma^T A \sigma'\|_p\text{ (\Lemma{decoupling})} \EquationName{hwstart}\\
+{}&\lesssim \sqrt{p} \cdot \| \|Ax\|_2 \|_p \text{ (Khintchine)} \EquationName{esquared}\\
+{}& = \sqrt{p} \cdot \| \|Ax\|_2^2 \|_{p/2}^{1/2} \EquationName{induction}\\
+\nonumber {}& \le \sqrt{p} \cdot \| \|Ax\|_2^2 \|_p^{1/2} \\
+\nonumber {}& \le \sqrt{p} \cdot (\|A\|_F^2 + \|\|Ax\|_2^2 - \E \|Ax\|_2^2 \|_p)^{1/2} \text{ (triangle inequality)}\\
+\nonumber {}& \le \sqrt{p} \cdot \|A\|_F + \sqrt{p}\cdot \|\|Ax\|_2^2 - \E \|Ax\|_2^2 \|_p^{1/2}\\
+\nonumber {}& \lesssim \sqrt{p} \cdot \|A\|_F + \sqrt{p}\cdot \|x^T A^T A x'\|_p^{1/2}\text{ (\Lemma{decoupling})}\\
+\nonumber {}& \lesssim \sqrt{p} \cdot \|A\|_F + p^{3/4}\cdot \|\|A^T Ax\|_2\|_p^{1/2}\text{ (Khintchine)}\\
+{}& \lesssim \sqrt{p} \cdot \|A\|_F + p^{3/4}\cdot\|A\|^{1/2} \cdot\|\|Ax\|_2\|_p^{1/2} \EquationName{eagain}
+\end{align}
+
+Writing $E = \|\|Ax\|_2\|_p^{1/2}$ and comparing \Eqsub{esquared} and \Eqsub{eagain}, we see that for some constant $C > 0$,
+$$
+E^2 - Cp^{1/4}\|A\|^{1/2} E - C\|A\|_F \le 0 .
+$$
+Thus $E$ must be smaller than the larger root of the above quadratic equation, implying our desired upper bound on $E^2$.
+\end{proof}
+
+\begin{remark}
+\textup{
+The ``square root trick'' in the proof of the Hanson-Wright inequality above is quite handy and can be used to prove several moment inequalities (for example, you will see how to prove the Bernstein inequality with it in tomorrow's lecture). As far as I am aware, the trick was first used in a work of Rudelson \cite{Rudelson99}.
+}
+\end{remark}
+
+\begin{remark}
+\textup{
+We could have upper bounded \Equation{induction} by 
+$$
+\sqrt{p}\cdot \|A\|_F + \sqrt{p}\cdot \| \|Ax\|_2^2 - \E\|Ax\|_2^2\|_{p/2}^{1/2}
+$$
+by the triangle inequality. Now notice we have bounded the $p$th central moment of a symmetric quadratic form \Eqsub{hwstart} by the $p/2$th moment also of a symmetric quadratic form. Writing $p = 2^k$, this observation leads to a proof by induction on $k$, which was the approach used in \cite{DiakonikolasKN10}.
+}
+\end{remark}
+
+\section{Johnson-Lindenstrauss (JL) lemma}
+
+First we prove the {\it Distributional JL Lemma (DJL)}.
+
+\begin{lemma}{DJL Lemma}
+For any integer $n > 1$ and $\eps,\delta\in (0, 1/2)$, there exists a distribution $\mathcal{D}_{\eps, \delta}$ over $\R^{m\times n}$ for $m \lesssim \eps^{-2}\log(1/\delta))$ such that for any $x\in\R^n$ of unit Euclidean norm,
+$$
+\Pr_{\Pi\sim\mathcal{D}_{\eps,\delta}}(| \|\Pi x\|_2^2 - 1 | > \eps ) < \delta
+$$
+\end{lemma}
+\begin{proof}
+Write $\Pi_{i,j} = \sigma_{i,j}/\sqrt{m}$, where the $\sigma_{i,j}$ are independent Rademachers. Also overload  $\sigma$ to mean these Rademachers arranged as a vector of length $mn$, by concatenating rows of $\Pi$. Note then
+$$
+\|\Pi x\|_2^2 = \|A_x\sigma\|_2^2
+$$
+where
+\begin{equation}
+A_x = \frac 1{\sqrt{m}}\cdot \begin{bmatrix} 
+- x^T - & 0 & \cdots & 0\\
+0 & - x^T - & \cdots & 0\\
+\vdots &\vdots &  &\vdots\\
+0&0&\cdots& - x^T -
+\end{bmatrix} . \EquationName{xmatrix}
+\end{equation}
+
+Thus
+$$
+\Pr(| \|\Pi x\|_2^2 - 1| > \eps) = \Pr(| \|A_x\sigma\|_2^2 - \E \|A_x\sigma\|_2^2 | > \eps) ,
+$$
+where we see that the right-hand side is readily handled by the Hanson-Wright inequality \Theorem{hw} with $A = A_x^T A_x$. Now observe $A$ is a block-diagonal matrix with each block equaling $(1/m)xx^T$, and thus $\|A\| = \|x\|_2^2 / m = 1/m$. We also have $\|A\|_F^2 = 1/m$. Thus Hanson-Wright yields
+$$
+\Pr(| \|\Pi x\|_2 ^2 - 1| > \eps) \lesssim e^{-C\eps^2 m} + e^{-C\eps m} ,
+$$
+which for $\eps < 1$ is at most $\delta$ for $m \gtrsim \eps^{-2}\log(1/\delta)$.
+\end{proof}
+
+The following is what is usually referred to as the {\em Johnson-Lindenstrauss (JL) lemma} \cite{JL84}. In this note we typically refer to it as the {\em Metric} JL lemma (or MJL) to distinguish it from DJL above. At some points we simply say JL instead of DJL or MJL, but the version meant will be understood from context.
+
+\begin{corollary}[Metric JL lemma (MJL)]
+For any $X = \{x_1,\ldots,x_N\}\subset \R^n$ and $0<\eps<1/2$, there exists $f:X\rightarrow\R^m$ for $m = O(\eps^{-2}\log N)$ such that for all $1\le i < j \le N$,
+\begin{equation}
+(1-\eps)\|x_i - x_j\|_2 \le \|f(x_i) - f(x_j)\|_2 \le (1+\eps)\|x_i - x_j\|_2 . \EquationName{origjl}
+\end{equation}
+\end{corollary}
+\begin{proof}
+Let $\mathcal{D}_{\eps,\delta}$ be as in DJL with $\delta < 1/\binom{N}{2}$. Consider a random $f$, where $f(x) = \Pi x$ for $\Pi$ drawn from $\mathcal{D}_{\eps,\delta}$. By DJL, each vector of the form $(x_i - x_j) / \|x_i - x_j\|_2$ has its norm preserved up to $1+\eps$ with probability strictly larger than $1 - 1/\binom{N}{2}$. Thus by a union bound over all $i, j$, all such vectors are preserved with positive probability, showing existence of the desired $f$.
+\end{proof}
+
+\subsection{Example application: $k$-means clustering}
+
+In the {\em $k$-means} clustering problem the input consists of $x_1,\ldots,x_N\in\R^n$ and a positive integer $k$, and the goal is to output some partition $\mathcal{P}$ of $[n]$ into $k$ disjoint subsets $P_1,\ldots,P_k$ as well as some $y = (y_1,\ldots,y_k)\in(\R^n)^k$ (the $y_i$ need not be equal to any of the $x_i$ and can be chosen arbitrarily) so as to minimize the cost function
+$$
+\mathop{cost}_{\mathcal{P},y}(x_1,\ldots,x_N) = \sum_{j=1}^k \sum_{i\in P_j} \|x_i - y_j\|_2^2 .
+$$
+That is, the $x_i$ are clustered into $k$ clusters according to $\mathcal{P}$, and the cost of a given clustering is the sum of squared Euclidean distances to the cluster centers (the $y_j$'s).
+
+Unfortunately finding the optimal clustering for $k$-means is NP-hard, however efficient approximation algorithms do exist which find a clusterings that are close to optimal.
+
+It is easy to show, e.g.\ by taking the gradient of the cost function, that for a fixed partition $\mathcal{P}$ of $[n]$, the optimal choice of cluster centers $y$ for that given $\mathcal{P}$ is the one where, for the $P_j$ of positive size, $y_j = (1/|P_j|)\cdot \sum_{i\in P_j}x_i$. Thus we can restrict our attention to just optimizing over $\mathcal{P}$. For a set of input points $X$, we let $\mathop{cost}_{\mathcal{P}}(X)$ denote 
+$$
+\inf_y \mathop{cost}_{\mathcal{P}, y}(X) .
+$$
+
+\begin{lemma} 
+Let the input points to $k$-means be $X = \{x_1,\ldots,x_n\}$. Then for any $0<\eps<1/2$, if $f:X\rightarrow\R^m$ is such that
+$$
+\forall i, j\ (1-\eps)\|x_i - x_j\|_2^2 \le \|f(x_i) - f(x_j)\|_2^2 \le (1+\eps)\|x_i - x_j\|_2^2
+$$
+then for $\hat{\mathcal{P}}$ a $\gamma$-approximate optimal clustering for $f(X)$ and $\mathcal{P}^*$ an optimal clustering for $X$, it holds that
+$$
+\mathop{cost}_{\hat{\mathcal{P}}}(X) \le \gamma\cdot \left(\frac{1+\eps}{1-\eps}\right)\cdot \mathop{cost}_{\mathcal{P}^*}(X) .
+$$
+\end{lemma}
+\begin{proof}
+Fix a partition $\mathcal{P}$ of $[n]$ and write $\mathcal{P} = (P_1,\ldots,P_k)$. Then
+\begin{align*}
+\underset{\mathcal{P}}{\mathop{cost}}(X) =& \sum_{j \in [k]} \sum_{i\in P_j} \|x_i - \frac{1}{|P_j|} \sum_{i'\in P_j} x_{i'}\|_2^2\\
+=& \sum_{j \in [k]}  \frac{1}{|P_j|} \sum_{i \in P_j} \left( \sum_{i' \in P_j} \|x_i\|_2^2 - 2 \langle x_i, \sum_{i' \in P_j} x_{i'} \rangle + \|\sum_{i' \in P_j}  x_{i'}\|_2^2 \right)\\
+=& \sum_{j \in [k]}  \frac{1}{|P_j|}  \sum_{i \in P_j} \sum_{i' \in P_j} \left( \frac{\|x_i\|_2^2 + \|x_{i'}\|_2^2}{2} - \langle x_i,x_{i'} \rangle\right)\\
+=& \sum_{j \in [k]}  \frac{1}{2|P_j|} \sum_{i \in P_j} \sum_{i' \in P_j} \|x_i-x_{i'}\|_2^2
+\end{align*}
+Thus if $f$ satisfies the condition of the lemma, then
+$$
+(1-\eps) \mathop{cost}_{\mathcal{P}}(X) \le \mathop{cost}_{\mathcal{P}}(f(X)) \le (1+\eps) \mathop{cost}_{\mathcal{P}}(X)
+$$
+for all partitions $\mathcal{P}$ simultaneously. Thus we have
+$$
+(1-\eps)\mathop{cost}_{\hat{\mathcal{P}}}(X) \le \mathop{cost}_{\hat{\mathcal{P}}}(f(X)) \le \gamma\cdot \mathop{cost}_{\mathcal{P}^*}(f(X)) \le \gamma\cdot (1+\eps) \mathop{cost}_{\mathcal{P}^*}(X) .
+$$
+The lemma follows by comparing the right hand side with the left.
+\end{proof}
+
+\bibliographystyle{alpha}
+\bibliography{biblio}
+
+\end{document}

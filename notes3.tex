@@ -1,0 +1,252 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{xspace}
+\usepackage{url}
+\usepackage[usenames]{color}
+
+\DeclareMathOperator*{\E}{\mathbb{E}}
+\let\Pr\relax
+\DeclareMathOperator*{\Pr}{\mathbb{P}}
+
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\inprod}[1]{\left\langle #1 \right\rangle}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\eqdef}{\mathbin{\stackrel{\rm def}{=}}}
+\newcommand{\lts}{\mathbin{\substack{<\\ *}}\xspace}
+\newcommand{\gts}{\mathbin{\substack{>\\ *}}\xspace}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{todo:} \textit{#1}}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+\newtheorem{claim}{Claim}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newcommand{\Figure}[1]{Figure~\ref{fig:#1}}
+\newtheorem{question}{Question}
+
+\newcommand{\EquationName}[1]{\label{eq:#1}}
+\newcommand{\ClaimName}[1]{\label{clm:#1}}
+\newcommand{\LemmaName}[1]{\label{lem:#1}}
+\newcommand{\CorollaryName}[1]{\label{cor:#1}}
+\newcommand{\SectionName}[1]{\label{sec:#1}}
+\newcommand{\TheoremName}[1]{\label{thm:#1}}
+\newcommand{\RemarkName}[1]{\label{rem:#1}}
+\newcommand{\FigureName}[1]{\label{fig:#1}}
+\newcommand{\QuestionName}[1]{\label{que:#1}}
+
+\newcommand{\Equation}[1]{Eq.\:\eqref{eq:#1}}
+\newcommand{\Claim}[1]{Claim~\ref{clm:#1}}
+\newcommand{\Lemma}[1]{Lemma~\ref{lem:#1}}
+\newcommand{\Corollary}[1]{Corollary~\ref{cor:#1}}
+\newcommand{\Section}[1]{Section~\ref{sec:#1}}
+\newcommand{\Theorem}[1]{Theorem~\ref{thm:#1}}
+\newcommand{\Remark}[1]{Remark~\ref{rem:#1}}
+\newcommand{\Question}[1]{Question~\ref{que:#1}}
+
+\newcommand{\Eqsub}[1]{\eqref{eq:#1}}
+
+\author{Jelani Nelson\\{}\texttt{minilek@seas.harvard.edu}}
+
+\title{Dimensionality Reduction --- Notes 3}
+
+\date{August 13, 2015}
+
+\begin{document}
+
+\maketitle
+
+\section{Gordon's theorem}
+
+Let $T$ be a finite subset of some normed vector space with norm $\|\cdot \|_X$. We say that a sequence $T_0\subseteq T_1\subseteq \ldots \subseteq T$ is {\it admissible} if $|T_0| = 1$ and $|T_r| \le 2^{2^r}$ for all $r\ge 1$, and $T_r = T$ for all $r \ge r_0$ for some $r_0$. We define the $\gamma_2$-functional
+$$ \gamma_2(T, \|\cdot \|_X) = \inf \sup_{x\in T} \sum_{r=1}^\infty 2^{r/2} \cdot d_X(x, T_r) ,$$
+where the $\inf$ is taken over all admissible sequences.  We also let $d_X(T)$ denote the diameter of $T$ with respect to norm $\|\cdot\|_X$. For the remainder of this section we make the definitions $\pi_r x = \mathrm{argmin}_{y\in T_r} \|y - x\|_X$ and $\Delta_r x = \pi_r x - \pi_{r-1} x$.
+
+Throughout this section we let $\|\cdot \|$ denote the $\ell_{2\rightarrow 2}$ operator norm in the case of matrix arguments, and the $\ell_2$ norm in the case of vector arguments. 
+
+Krahmer, Mendelson, and Rauhut showed the following theorem \cite{KMR14}.
+
+\begin{theorem}
+Let $\mathcal{A}\subset \R^{m\times n}$ be arbitrary. Let $\eps_1,\ldots,\eps_n$ be independent $\pm 1$ random variables. Then
+$$ \E_\eps \sup_{A\in\mathcal{A}} \left|\|A\eps\|^2 - \E\|A\eps\|^2\right| \lesssim \gamma_2^2(\mathcal{A}, \|\cdot\|) + \gamma_2(\mathcal{A}, \|\cdot\|)\cdot d_F(\mathcal{A}) + d_F(\mathcal{A})\cdot d_{\ell_{2\rightarrow 2}}(\mathcal{A}).$$
+\end{theorem}
+
+The KMR theorem was actually more general, where the Rademacher variables could be replaced by subgaussian random variables. We present just the proof of the Rademacher case.
+
+\begin{proof}
+Without loss of generality we can assume $\mathcal{A}$ is finite (else apply the theorem to a sufficiently fine net, i.e.\ fine in $\ell_2\rightarrow\ell_2$ operator norm). Define
+$$ E = \E_\eps \sup_{A\in\mathcal{A}} \left|\|A\eps\|^2 - \E\|A\eps\|^2\right| $$
+and let $A^i$ denote the $i$th column of $A$. Then by decoupling
+\allowdisplaybreaks
+\begin{align*}
+E &= \E_\eps \sup_{A\in\mathcal{A}} \left| \sum_{i\neq j} \eps_i \eps_j\inprod{A^i, A^j} \right| \\
+{}& \le 4\cdot \E_{\eps,\eps'} \sup_{A\in\mathcal{A}} \left| \sum_{i,j}\eps_i \eps_j'\inprod{A^i, A^j} \right|\\ 
+{}& = 4\cdot \E_{\eps,\eps'} \sup_{A\in\mathcal{A}} \left| \inprod{A\eps, A\eps'} \right| .
+\end{align*}
+
+Let $\{T_r\}_{r=0}^{\infty}$ be admissible for $\mathcal{A}$. Direct computation shows 
+$$ \inprod{A\eps, A\eps'} = \inprod{(\pi_0 A)\eps, (\pi_0 A)\eps'} + \sum_{r=1}^\infty \underbrace{\inprod{(\Delta_r A)\eps, (\pi_{r-1} A)\eps'}}_{X_r(A)} + \sum_{r=1}^\infty \underbrace{\inprod{(\pi_r A)\eps, (\Delta_r A)\eps'}}_{Y_r(A)} .$$
+We have $T_0 = \{A_0\}$ for some $A_0\in\mathcal{A}$. Thus $\E_{\eps,\eps'} \left|\inprod{(\pi_0 A)\eps, (\pi_0 A)\eps'}\right|$ equals
+$$ \E_{\eps,\eps'} \left|\eps^* A_0^* A_0\eps'\right| \le \left(\E_{\eps,\eps'} \left(\eps^* A_0^* A_0 \eps' \right)^2\right)^{1/2} = \|A_0^* A_0\|_F \le \|A_0\|_F  \|A_0\| \le d_F(\mathcal{A})\cdot d_{\ell_{2\rightarrow 2}}(\mathcal{A}) .$$
+
+Thus,
+\begin{equation*}
+ \E_{\eps, \eps'} \sup_{A\in\mathcal{A}} \left| \inprod{A\eps, A\eps'} \right| \le d_F(\mathcal{A})\cdot d_{\ell_{2\rightarrow 2}}(\mathcal{A}) + \E_{\eps,\eps'} \sup_{A\in\mathcal{A}} \sum_{r=1}^\infty |X_r(A)| + \E_{\eps,\eps'} \sup_{A\in\mathcal{A}} \sum_{r=1}^\infty |Y_r(A)| .\\
+\end{equation*}
+We focus on the second summand; handling the third summand is similar.
+
+Note $X_r(A) = \inprod{(\Delta_r A)\eps, (\pi_{r-1} A)\eps'} = \inprod{\eps, (\Delta_r A)^* (\pi_{r-1} A)\eps'}$. Thus 
+$$ \Pr(|X_r(A)| > t2^{r/2}\cdot \|(\Delta_r A)^* (\pi_{r-1} A)\eps'\|) \lesssim e^{-t^22^r / 2} \text{ (Khintchine)}.$$
+Let $\mathcal{E}(A)$ be the event that for all $r\ge 1$ simultaneously, $|X_r(A)| \le t2^{r/2}\cdot \|\Delta_r A\| \cdot \sup_{A\in\mathcal{A}} \|A\eps'\|$. Then
+\begin{align*}
+\Pr(\exists A\in\mathcal{A}\ s.t.\ \neg \mathcal{E}(A)) &\lesssim \sum_{r=1}^\infty |T_r|\cdot |T_{r-1}| \cdot e^{-t^2 2^r/2} \\
+{}&\le \sum_{r=1}^\infty 2^{2^{r+1}} \cdot e^{-t^22^r/2} .
+\end{align*}
+
+Therefore
+\begin{align*}
+\E_{\eps,\eps'} \sup_{A\in\mathcal{A}}\sum_{r=1}^\infty |X_r(A)| &= \E_{\eps'} \int_0^\infty \Pr_{\eps}\left(\sup_{A\in\mathcal{A}} \sum_{r=1}^\infty |X_r(A)| > t\right) dt ,\\
+\end{align*}
+which by a change of variables is equal to
+\begin{align*}
+&\E_{\eps'} \Bigg(\sup_{A\in\mathcal{A}} \|A\eps'\| \cdot \left(\sup_{A\in\mathcal{A}} \sum_{r=1}^\infty 2^{r/2} \|\Delta_r A\|\right) \\
+&\hspace{.5in}{}\times \cdot \int_0^\infty \Pr_{\eps}\left(\sup_{A\in\mathcal{A}} \sum_{r=1}^\infty |X_r(A)| > t\sup_{A\in\mathcal{A}} 2^{r/2}\cdot \|\Delta_r A\| \cdot \sup_{A\in\mathcal{A}} \|A\eps'\|\right) dt \Bigg)\\
+{}&\le \left(\E_{\eps'} \sup_{A\in\mathcal{A}} \|A\eps'\|\right) \cdot \left(\sup_{A\in\mathcal{A}} \sum_{r=1}^\infty 2^{r/2} \|\Delta_r A\|\right) \cdot \left[ 3 + \sum_{r=1}^\infty \int_3^\infty 2^{2^{r+1}} e^{-t^22^r/2} dt \right] \\
+{}&\lesssim \left(\E_{\eps'} \sup_{A\in\mathcal{A}} \|A\eps'\|\right) \cdot \sup_{A\in\mathcal{A}} \sum_{r=1}^\infty 2^{r/2} \|\Delta_r A\| \\
+{}&\lesssim \left(\E_{\eps'} \sup_{A\in\mathcal{A}} \|A\eps'\|\right) \cdot \sup_{A\in\mathcal{A}} \sum_{r=1}^\infty 2^{r/2} \cdot d_{2\rightarrow 2}(A, T_r) ,
+\end{align*}
+since $\|\Delta_r A\| \le d_{2\rightarrow 2}(A, T_{r-1}) + d_{2\rightarrow 2}(A, T_r)$ via the triangle inequality. Choosing admissible $T_0\subseteq T_1\subseteq\ldots\subseteq T$ to minimize the above expression,
+$$ E \lesssim d_F(\mathcal{A})\cdot d_{\ell_{2\rightarrow 2}}(\mathcal{A}) + \gamma_2(\mathcal{A}, \|\cdot \|)\cdot \E_{\eps'} \sup_{A\in\mathcal{A}} \|A\eps'\| .$$
+
+Now observe
+\begin{align*}
+\E_{\eps'} \left(\sup_{A\in\mathcal{A}} \|A\eps'\|\right) &\le \left(\E_{\eps'} \sup_{A\in\mathcal{A}} \|A\eps'\|^2\right)^{1/2} \\
+{}& \le \left(\E_{\eps'} \left(\sup_{A\in\mathcal{A}} \left|\|A\eps'\|^2 - \E_{\eps'} \|A\eps'\|^2\right| + \E_{\eps'} \|A\eps'\|^2\right)\right)^{1/2}\\
+{}& = \left(\E_{\eps'} \sup_{A\in\mathcal{A}} \left(\left|\|A\eps'\|^2 - \E_{\eps'} \|A\eps'\|^2\right| + \|A\|_F^2 \right)\right)^{1/2}\\
+{}& \le \sqrt{E} + d_F(\mathcal{A})
+\end{align*}
+
+Thus in summary,
+$$ E \lesssim d_F(\mathcal{A})\cdot d_{\ell_{2\rightarrow 2}}(\mathcal{A}) + \gamma_2(\mathcal{A}, \|\cdot\|)\cdot (\sqrt{E} + d_F(\mathcal{A})) .$$
+This implies $E$ is at most the square of the larger root of the associated quadratic equation, which gives the theorem.
+\end{proof}
+
+Using the KMR theorem, we can recover Gordon's theorem \cite{Gordon88} (also see \cite{KlartagM05,MendelsonPTJ07,Dirksen14}). We again only discuss the Rademacher case. Note that in metric JL, we wish for the set of vectors $X$ that
+$$
+\forall x,y\in X,\ | \|\Pi (x-y)\|_2^2 - \|x - y\|_2^2 \| < \eps\|x-y\|_2^2 .
+$$
+If we define
+$$
+T = \left\{\frac{x-y}{\|x-y\|_2} : x,y\in X\right\} ,
+$$
+then it is equivalent to have
+$$
+\sup_{x\in T} | \|\Pi x\|_2^2 - 1 | < \eps .
+$$
+Since $\Pi$ is random, we will demand that this holds in expectation
+\begin{equation}\EquationName{mjl}
+\E_\Pi \sup_{x\in T} | \|\Pi x\|_2^2 - 1 | < \eps .
+\end{equation}
+
+\begin{theorem}\label{thm:jl}
+Let $T\subset \R^n$ be a set of vectors each of unit norm, and let $\eps\in (0,1/2)$ be arbitrary. Let $\Pi\in\R^{m\times n}$ be such that $\Pi_{i,j} = \sigma_{i,j}/\sqrt{m}$ for independent Rademacher $\sigma_{i,j}$, and where $m = \Omega((\gamma_2^2(T, \|\cdot\|) + 1) / \eps^2)$. Then
+$$ \E \sup_{x\in T} \left|\|\Pi x\|^2 - 1 \right| < \eps .$$
+\end{theorem}
+\begin{proof}
+For $x\in T$ let $A_x$ denote the $m\times mn$ matrix defined as follows:
+\begin{equation*}
+A_x = \frac{1}{\sqrt{m}}\cdot \left[
+\begin{array}{cccccccccccc}
+x_1 & \cdots & x_n & 0 & \cdots & \cdots & \cdots & \cdots & \cdots &\cdots &\cdots &0\\
+0 & \cdots & 0 & x_1 & \cdots & x_n & 0 & \cdots & \cdots &\cdots &\cdots &0\\
+\vdots &\vdots &\vdots &\cdots &\cdots &\cdots &\cdots &\cdots &\cdots &\cdots &\cdots &\cdots\\
+0 & \cdots & \cdots & \cdots & \cdots  & \cdots& \cdots& \cdots& 0 & x_1 & \cdots & x_n
+\end{array}
+\right] .
+\end{equation*}
+Then $\|\Pi x\|^2 = \|A_x \sigma\|^2$, so letting $\mathcal{A} = \{A_x : x\in T\}$,
+$$ \E \sup_{x\in T} \left|\|\Pi x\|^2 - 1 \right| = \E \sup_{A\in\mathcal{A}} \left|\|A \sigma\|^2 - \E \|A\sigma\|^2 \right| .$$
+We have $d_F(\mathcal{A}) = 1$. Also $A_x^*A_x$ is a block-diagonal matrix, with $m$ blocks each equal to $xx^*/m$, and thus the singular values of $A_x$ are $0$ and $\|x\|/\sqrt{m}$, implying $d_{\ell_{2\rightarrow 2}}(\mathcal{A}) = 1/\sqrt{m}$. Similarly, since $A_x - A_y = A_{x-y}$, for any vectors $x,y$ we have  $\|A_x - A_y\| = \|x - y\|$, and thus $\gamma_2(\mathcal{A}, \|\cdot\|) = \gamma_2(T, \|\cdot\|)/\sqrt{m}$. Thus by the KMR theorem we have
+$$ \E \sup_{x\in T} \left|\|\Pi x\|^2 - 1 \right| \lesssim \frac{\gamma_2^2(T, \|\cdot\|)}{m} + \frac{\gamma_2(T, \|\cdot\|)}{\sqrt{m}} + \frac{1}{\sqrt{m}} ,$$
+which is at most $\eps$ for $m$ as in the theorem statement.
+\end{proof}
+
+Gordon's theorem was actually stated differently in \cite{Gordon88} in two ways: (1) Gordon actually only analyzed the case of $\Pi$ having i.i.d.\ gaussian entries, and (2) the $\gamma_2(T,\|\cdot\|)$ terms in the theorem statement were written as the {\em gaussian mean width} $g(T) = \E_g \sup_{x\in T} \inprod{g,x}$, where $g\in\R^n$ is a vector of i.i.d.\ standard normal random variables. For (1), the extension to arbitrary subgaussian random variables was shown first in \cite{KlartagM05}. Note the KMR theorem only bounds an expectation; thus if one wants to argue that the random variable in question is large with with probability at most $\delta$, the most obvious way is Markov, which would introduce JL a poor $1/\delta^2$ dependence in $m$. One could remedy this by doing Markov on the $p$th moment; the tightest known $p$-norm bound is given in \cite[Theorem 6.5]{Dirksen13} (see also \cite[Theorem 4.8]{Dirksen14}).
+
+For (2), Gordon actually wrote his paper before $\gamma_2$ was even defined! The definition of $\gamma_2$ given here is due to Talagrand, who also showed that for all sets of vectors $T\subset\R^n$, $g(T)\simeq \gamma_2(T, \|\cdot\|)$ \cite{Talagrand14} (this is known as the ``Majorizing Measures'' theorem). In fact the upper bound $g(T) \lesssim \gamma_2(T, \|\cdot\|)$ was shown by Fernique \cite{Fernique75} (although $\gamma_2$ was not defined at that point; Talagrand later recast this upper bound in terms of his newly defined $\gamma_2$-functional).
+
+We thus state the following corollary of the majorizing measures theorem and Theorem~\ref{thm:jl}.
+
+\begin{corollary}\CorollaryName{gordon}
+Let $T\subset \R^n$ be a set of vectors each of unit norm, and let $\eps\in (0,1/2)$ be arbitrary. Let $\Pi\in\R^{m\times n}$ be such that $\Pi_{i,j} = \sigma_{i,j}/\sqrt{m}$ for independent Rademacher $\sigma_{i,j}$, and where $m = \Omega((g^2(T)+1) / \eps^2)$. Then
+$$ \E \sup_{x\in T} \left|\|\Pi x\|^2 - 1 \right| < \eps .$$
+\end{corollary}
+
+\subsection{Application 1: numerical linear algebra}
+Consider, for example, the least squares regression problem. Given $A\in\R^{n\times d}, b\in\R^n$, $n\gg d$, the goal is to compute
+\begin{equation}\EquationName{lsr}
+x^* = \mathop{argmin}_{x\in\R^n} \|Ax - b\|_2 .
+\end{equation}
+It is standard that
+$$
+x^* = (A^T A)^{-1} A^T b
+$$
+when $A$ has full column rank. Unfortunately, naively computing $A^T A$ takes time $\Theta(nd^2)$. We would like to speed this up.
+
+Given our lectures on dimensionality reduction, one natural question is the following: if instead we compute
+$$
+\tilde{x}^* = \mathop{argmin}_{x\in\R^n} \|\Pi Ax - \Pi b\|_2
+$$
+for some JL map $\Pi$ with few rows $m$, can we argue that $\tilde{x}^*$ is a good solution for \Eqsub{lsr}? The answer is yes.
+
+\begin{theorem}\TheoremName{sarlos}
+Suppose \Eqsub{mjl} holds for $T$ the unit vectors in the subspace spanned by $b$ and the columns of $A$. Then
+$$
+\|A\tilde{x} - b\|_2^2 \le \frac{1+\eps}{1-\eps}\cdot \|Ax^* - b\|_2^2
+$$
+\end{theorem}
+\begin{proof}
+$$
+(1-\eps)\|A\tilde{x}^* - b\|_2^2 \le \|\Pi A\tilde{x}^* - \Pi b\|_2^2 \le \|\Pi Ax^* - \Pi b\|_2^2 \le (1+\eps)\|Ax^* - b\|_2^2 .
+$$
+The first and third inequalities hold since $\Pi$ preserves $A\tilde{x}^*-b$ and $Ax^*-b$. The second inequality holds since $\tilde{x}^*$ is the optimal solution to the lower dimensional regression problem.
+\end{proof}
+
+Now we may ask ourselves: what is the number of rows $m$ needed to preserve the vector $T$ in \Theorem{sarlos}? We apply \Corollary{gordon}. Note $T$ is the set of unit vectors in a subspace of dimension $D\le d+1$. By rotational symmetry of the gaussian, we can assume this subspace equals $\mathop{span}\{e_1,\ldots,e_D\}$. Then
+$$
+\E_{g\in\R^D} \sup_{x\in\ell_2^D}\inprod{g,x} = \E_{g\in\R^D} \|g\|_2 \le (\E_{g\in\R^D} \|g\|_2^2)^{1/2} = \sqrt{D} . 
+$$
+Thus it suffices for $\Pi$ to have $m\gtrsim d/\eps^2$ rows.
+
+Unfortunately in the above, although solving the lower-dimensional regression problem is fast (since now $\Pi A$ has $O(d/\eps^2)$ rows compared with the $n$ rows of $A$), multiplying $\Pi A$ using dense random $\Pi$ is actually {\em slower} than solving the original regression problem \Eqsub{lsr}. This was remedied by Sarl\'{o}s in \cite{Sarlos06} by using a fast JL matrix as in Lecture 2; see \cite[Theorem 9]{CohenNW15} for the tightest analysis of this construction in this context. An alternative is to use a sparse $\Pi$. The first analysis of this approach was in \cite{ClarksonW13}. The tightest known analyses are in \cite{MengM13,NelsonN13,BourgainDN15}.
+
+It is also the case that $\Pi$ can be used more efficently to solve regression problems than simply requiring \Eqsub{mjl} for $T$ as above. See for example \cite[Theorem 7.7]{ClarksonW13} in the full version of that paper for an iterative algorithm based on such $\Pi$ which has running time dependence on $\eps$ equal to $O(\log(1/\eps))$, instead of the $\mathop{poly}(1/\eps)$ above. For further results on applying JL to problems in this domain, see the book \cite{Woodruff14}.
+
+\subsection{Application 2: compressed sensing}
+In {\em compressed sensing}, the goal is to (approximately) recover an (approximately) sparse signal $x\in\R^n$ from a few linear measurements. We will imagine that these $m$ linear measurements are organized as the rows of a matrix $\Pi\in\R^{m\times n}$. Let $T^k$ be the set of all $k$-sparse vectors in $\R^n$ of unit norm (i.e.\ the union of $\binom{n}{k}$ $k$-dimensional subspaces). One always has
+$$
+\gamma_2(T, \|\cdot\|) \le \inf_{\{T_r\}} \sum_{r=1}^\infty 2^{r/2}\cdot  \sup_{x\in T} d_{\ell_2}(x, T_r) ,
+$$
+i.e.\ the $\sup$ can be moved inside the sum to obtain an upper bound. Minimizing the right hand side amounts to finding the best nets possible for $T$ of some bounded size $2^{2^k}$ for each $k$. By doing this, which we do not discuss here, one can show that for our $T^k$, $\gamma_2(T^k,\|\cdot\|) \lesssim \sqrt{k\log(n/k)}$ so that one can obtain \Eqsub{mjl} with $m\simeq k\log(n/k)/\eps^2$. A more direct net argument can also yield this bound (see \cite{BaraniukDD08} which suffered a $\log(1/\eps)$ factor, and the removal of this factor in \cite[Theorem 9.12]{FoucartR13}).
+
+Now, any matrix $\Pi$ preserving this $T^k$ with distortion $1+\eps$ is known as having the {\em $(k,\eps)$-restricted isometry property (RIP)} \cite{CandesT06}. We are ready to state a theorem of \cite{CandesT06,Donoho06}. One can find a short proof in \cite{Candes08}.
+
+\begin{theorem}
+Suppose $\Pi$ satisfies the $(2k,\sqrt{2}-1)$-RIP. Then given $y = \Pi x$, if one solves the linear program
+\begin{align*}
+&\min \|z\|_1\\
+\text{s.t.\ } & \Pi z = y
+\end{align*}
+then the optimal solution $\tilde{x}$ will satisfy
+$$
+\|x - \tilde{x}\|_2 = O(1/\sqrt{k})\cdot \inf_{\substack{w\in\R^n\\ |\mathop{supp}(w)| \le k}}\|x - w\|_1 .
+$$
+\end{theorem}
+
+
+\bibliographystyle{alpha}
+\bibliography{../biblio}
+
+\end{document}

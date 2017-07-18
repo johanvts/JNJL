@@ -1,0 +1,294 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{xspace}
+\usepackage[usenames]{color}
+
+\DeclareMathOperator*{\E}{\mathbb{E}}
+\let\Pr\relax
+\DeclareMathOperator*{\Pr}{\mathbb{P}}
+
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\inprod}[1]{\left\langle #1 \right\rangle}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\eqdef}{\mathbin{\stackrel{\rm def}{=}}}
+\newcommand{\lts}{\mathbin{\substack{<\\ *}}\xspace}
+\newcommand{\gts}{\mathbin{\substack{>\\ *}}\xspace}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{todo:} \textit{#1}}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+\newtheorem{claim}{Claim}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newcommand{\Figure}[1]{Figure~\ref{fig:#1}}
+\newtheorem{question}{Question}
+
+\newcommand{\EquationName}[1]{\label{eq:#1}}
+\newcommand{\ClaimName}[1]{\label{clm:#1}}
+\newcommand{\LemmaName}[1]{\label{lem:#1}}
+\newcommand{\CorollaryName}[1]{\label{cor:#1}}
+\newcommand{\SectionName}[1]{\label{sec:#1}}
+\newcommand{\TheoremName}[1]{\label{thm:#1}}
+\newcommand{\RemarkName}[1]{\label{rem:#1}}
+\newcommand{\FigureName}[1]{\label{fig:#1}}
+\newcommand{\QuestionName}[1]{\label{que:#1}}
+
+\newcommand{\Equation}[1]{Eq.\:\eqref{eq:#1}}
+\newcommand{\Claim}[1]{Claim~\ref{clm:#1}}
+\newcommand{\Lemma}[1]{Lemma~\ref{lem:#1}}
+\newcommand{\Corollary}[1]{Corollary~\ref{cor:#1}}
+\newcommand{\Section}[1]{Section~\ref{sec:#1}}
+\newcommand{\Theorem}[1]{Theorem~\ref{thm:#1}}
+\newcommand{\Remark}[1]{Remark~\ref{rem:#1}}
+\newcommand{\Question}[1]{Question~\ref{que:#1}}
+
+\newcommand{\Eqsub}[1]{\eqref{eq:#1}}
+
+\author{Jelani Nelson\\{}\texttt{minilek@seas.harvard.edu}}
+
+\title{Dimensionality Reduction --- Notes 2}
+
+\date{August 11, 2015}
+
+\begin{document}
+
+\maketitle
+
+\section{Optimality theorems for JL}
+
+Yesterday we saw for MJL that we could achieve target dimension $m = O(\eps^{-2}\log N)$, and for DJL we could achieve $m = O(\eps^{-2}\log(1/\delta))$. The following theorems tell us that not much improvement is possible for MJL, and for DJL we have the optimal bound.
+
+\begin{theorem}[\cite{Alon03}]
+For any $N>1$ and $\eps<1/2$, there exist $N+1$ points in $\R^N$ such that achieving the MJL guarantee with distortion $1+\eps$ requires
+$$
+m\gtrsim \min\{n, \eps^{-2}(\log N)/\log(1/\eps)\} .
+$$
+\end{theorem}
+
+The $\log(1/\eps)$ loss in the lower bound can be removed if the map must be linear.
+
+\begin{theorem}[\cite{LarsenN14}]
+For any $N>1$ and $\eps<1/2$, there exist $N^{O(1)}$ points in $\R^N$ such that achieving the MJL guarantee with distortion $1+\eps$ {\em using a linear map} requires
+$$
+m\gtrsim \min\{n, \eps^{-2} \log N\} .
+$$
+\end{theorem}
+
+For DJL, the upper bound is optimal.
+
+\begin{theorem}[\cite{JayramW13, KaneMN11}]
+For any $\eps,\delta<1/2$, any DJL distribution must have
+$$
+m\gtrsim \min\{n, \eps^{-2}\log(1/\delta)\} .
+$$
+\end{theorem}
+
+\section{Example application: deterministic $\ell_1$ point query and heavy hitters}
+
+Yesterday's notes gives an example application of JL to $k$-means clustering. Today we give another application.
+
+In the {$\ell_1$ point query problem} a vector $x\in\R^n$ is updated in the turnstile streaming model. A query is an index $i\in[n]$, and the response to the query should be a value $\tilde{x}$ such that $|x_i - \tilde{x}_i| \le \eps\|x\|_1$. We show an argument of \cite{NelsonNW14} that the JL lemma implies the existence of a fixed deterministic $\Pi\in\R^{m\times n}$ with $m \lesssim \eps^{-2}\log n$ such that such a $\tilde{x}$ can be recovered from $\Pi x$.
+
+\begin{definition}
+We say that a matrix $\Pi$ with columns $\Pi_1,\ldots,\Pi_n$ is {\em $\eps$-incoherent} if (1) $\|\Pi_i\|_2 = 1$ for all $i$, and (2) for all $i\neq j$, $|\inprod{\Pi_i, \Pi_j}| \le \eps$.
+\end{definition}
+
+\begin{theorem}
+If $\Pi\in\R^{m\times n}$ is $\eps$-incoherent, then there is a polynomial time recovery algorithm $\mathcal{A}_\Pi$ such that given any $y = \Pi x$, if we define $\tilde{x} = \mathcal{A}_\Pi(y)$ then $\|\tilde{x} - x\|_\infty \le \eps\|x\|_1$.
+\end{theorem}
+\begin{proof}
+The recovery algorithm will be $\mathcal{A}_\Pi(y) = \Pi^T y = \Pi^T \Pi x$. Thus
+$$
+\tilde{x}_i = e_i^T \Pi^T \Pi x = \sum_{j=1}^n \inprod{\Pi_i, \Pi_j} x_i = x_i + \sum_{i\neq j} \inprod{\Pi_i, \Pi_j} x_i = x_i \pm \eps\|x\|_1 .
+$$
+\end{proof}
+
+Now we show the existence of such $\Pi$ with small $m$.
+
+\begin{lemma}
+$\forall\ \eps\in(0,1/2)$, there is $\eps$-incoherent $\Pi$ with $m \lesssim \eps^{-2}\log n$.
+\end{lemma}
+\begin{proof}
+Consider the set of vectors $\{0,e_1,\ldots,e_n\}$. By the JL lemma, there exists $\Pi'$ with $O(\eps^{-2}\log n)$ rows, and having columns $\Pi_i'$ such that (1) $|\Pi'_i\|_2 = \|\Pi' e_i\|_2 = 1\pm \eps/3$, and (2) $\|\Pi_i' - \Pi_j'\|_2 = \|\Pi' e_i - \Pi'e_j\|_2 = (1\pm\eps/3)\sqrt{2}$ for all $i\neq j$. Let $\Pi$ be the matrix whose $i$th column is $\Pi_i'/\|\Pi_i'\|_2$. Then $\|\Pi_i\|_2 = 1$ for all $i$, as desired. Furthermore
+$$
+2(1\pm\eps)^2 = \|\Pi_i - \Pi_j\|_2^2 = \|\Pi_i\|_2^2 + \|\Pi_j\|_2^2 - 2\inprod{\Pi_i, \Pi_j} .
+$$
+Note $\|\Pi_i\|_2^2$ and $\|\Pi_j\|_2^2$ are both $1\pm O(\eps)$, implying $|\inprod{\Pi_i, \Pi_j}| = O(\eps)$. The lemma follows by applying this argument with $\eps$ scaled down by a constant.
+\end{proof}
+
+\section{Faster JL}
+
+Typically we have some high-dimensional computational geometry problem, and we use JL to speed up our algorithm in two steps: (1) apply a JL map $\Pi$ to reduce the problem to low dimension $m$, then (2) solve the lower-dimensional problem. As $m$ is made smaller, typically (2) becomes faster. However, ideally we would also like step (1) to be as fast as possible. In this section, we investigate two approaches to speed up the computation of $\Pi x$.
+
+One of the analyses will make use of the following Bernstein bound.
+
+\begin{theorem}[Bernstein's inequality]\TheoremName{bernstein}
+Let $X_1,\ldots,X_n$ be independent random variables that are each at most $K$ almost surely, and where
+$$
+\sum_{i=1}^n \E(X_i - \E X_i)^2 = \sigma^2 .
+$$
+Then for all $p\ge 1$
+$$
+\|\sum_{i=1}^n X_i - \E\sum_i X_i\|_p \lesssim \sigma\sqrt{p} + Kp .
+$$
+\end{theorem}
+\begin{proof}
+Let $r_1,\ldots,r_n$ be independent Rademachers. Then
+\begin{align}
+\nonumber \|\sum_i (X_i - \E X_i)\|_p  &\le 2\cdot \|\sum_i r_i X_i\|_p \text{ (symmetrization)}\\
+{}& \lesssim \sqrt{p}\cdot\|(\sum_i X_i^2)^{1/2}\|_p\text{ (Khintchine)} \EquationName{firstEsq}\\
+\nonumber {}& = \sqrt{p} \cdot\|\sum_i X_i^2\|_{p/2}^{1/2}\\
+\nonumber {}& \le \sqrt{p} \cdot\|\sum_i X_i^2\|_p^{1/2}\\
+\nonumber {}& \le \sigma\sqrt{p} + \sqrt{p}\cdot \|\sum_i X_i^2 - \E \sum_i X_i^2\|_p^{1/2} \text{ (triangle inequality)}\\
+\nonumber {}& \le \sigma\sqrt{p} + \sqrt{p}\cdot \|\sum_i r_i X_i^2\|_p^{1/2}\text{ (symmetrization)}\\
+\nonumber {}& \le \sigma\sqrt{p} + p^{3/4} \cdot \|(\sum_i X_i^4)^{1/2}\|_p^{1/2} \text{ (Khintchine)}\\
+{}& \le \sigma\sqrt{p} + p^{3/4} \cdot \sqrt{K} \cdot \|(\sum_i X_i^2)^{1/2}\|_p^{1/2} \EquationName{secondE}
+\end{align}
+Defining $E = \|(\sum_i X_i^2)^{1/2}\|_p^{1/2}$ and comparing \Eqsub{firstEsq} with \Eqsub{secondE}, for some constant $C>0$ 
+$$
+E^2 - C\cdot p^{1/4} \cdot \sqrt{K} \cdot E - C\sigma \le 0 .
+$$
+Thus $E$ must be smaller than the larger root of the above quadratic equation, implying our desired upper bound on $E^2$.
+\end{proof} 
+
+\subsection{Sparse JL}
+
+One natural way to speed up JL is to make $\Pi$ sparse. If $\Pi$ has $s$ non-zero entries per column, then $\Pi x$ can be multiplied in time $O(s\cdot\|x\|_0)$, where $\|x\|_0 = |\{i : x_i \neq 0\}|$. The goal is then to make $s, m$ as small as possible.
+
+The following matrix $\Pi$ was introduced in \cite{CharikarCF04}, and it was analyzed for DJL in \cite{ThorupZ12}. In this construction, one picks a hash function $h:[n]\rightarrow[m]$ from a pairwise independent family, and a function $\sigma:[n]\rightarrow\{-1,1\}$ from a $4$-wise independent family. Then for each $i\in[n]$, $\Pi_{h(i), i} = \sigma(i)$, and the rest of the $i$th column is $0$. It was shown in \cite{ThorupZ12} that this distribution provides DJL for $m \gtrsim 1/(\eps^2\delta)$. Note that $s = 1$ as described here. The analysis is simply via Chebyshev's inequality, after doing an expectation and variance calculation.
+
+The reason for the poor dependence in $m$ on the failure probability $\delta$ is that we use Chebyshev's inequality. This was avoided yesterday by using Hanson-Wright, i.e.\ a bound on the $p$-norms of quadratic forms. Recall that a bound on $p$-norms gives tail bounds via Markov's inequality, and if one unrolls the proof fully yesterday, one would find that yesterday's lecture obtained $\delta$ failure probability by using the Hanson-Wright $p$-norm bound for $p = \Theta(\log(1/\delta))$. That is to say, the improvement yesterday came from bounding a higher moment than $p=2$ (i.e.\ Chebyshev).
+
+To improve the dependence of $m$ on $1/\delta$, we allow ourselves to increase $s$. Here we analyze the Sparse JL Transform (SJLT) \cite{KaneN14}. This is a JL distribution over $\Pi$ having exactly $s$ non-zero entries per column. 
+
+As previously, we assume $x\in\R^n$ has $\|x\|_2 = 1$. Our random $\Pi\in\R^{m\times n}$ satisfies $\Pi_{r,i} = \eta_{r,i} \sigma_{r,i} / \sqrt{s}$ for some integer $1\le s \le m$. The $\sigma_{r,i}$ are independent Rademachers. The $\eta_{r,i}$ are Bernoulli random variables satisfying:
+\begin{itemize}
+\item For all $r, i$,  $\E \eta_{r,i} = s/m$.
+\item For any $i$, $\sum_{r=1}^m \eta_{r,i} = s$. That is, each column of $\Pi$ has {\it exactly} $s$ non-zero entries.
+\item The $\eta_{r,i}$ are negatively correlated. That is, for any subset $S$ of $[m]\times [n]$, we have $\E\prod_{(r,i) \in S} \eta_{r,i} \le \prod_{(r,i)\in S} \E \eta_{r,i} = (s/m)^{|S|}$.
+\end{itemize}
+
+We would like to show the following, which is the main theorem of \cite{KaneN14}.
+
+\begin{theorem}
+As long as $m \simeq \eps^{-2}\log(1/\delta)$ and $s\simeq \eps m$,
+\begin{equation}
+\forall x : \|x\|_2 = 1,\ \Pr_{\Pi}(| \|\Pi x\|_2^2 - 1 | > \eps) < \delta .
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Abusing notation and treating $\sigma$ as an $mn$-dimensional vector,
+$$
+Z = \|\Pi x\|_2^2 - 1 = \frac 1s \sum_{r=1}^m\sum_{i\neq j} \eta_{r,i}\eta_{r,j} \sigma_{r,i}\sigma_{r,j} x_i x_j \eqdef \sigma^T A_{x,\eta} \sigma ,
+$$
+Thus by Hanson-Wright
+$$\|Z\|_p \le \|\sqrt{p}\cdot\|A_{x,\eta}\|_F + p\cdot\|A_{x,\eta}\|\|_p \le \sqrt{p}\cdot\|\|A_{x,\eta}\|_F\|_p + p\cdot\|\|A_{x,\eta}\|\|_p .$$
+
+$A_{x,\eta}$ is a block diagonal matrix with $m$ blocks, where the $r$th block is $(1/s) x^{(r)} (x^{(r)})^T$ but with the diagonal zeroed out. Here $x^{(r)}$ is the vector with $(x^{(r)})_i = \eta_{r,i} x_i$. Now we just need to bound $\|\|A_{x,\eta}\|_F\|\|_p$ and $\|\|A_{x,\eta}\|\|_p$.
+
+Since $A_{x,\eta}$ is block-diagonal, its operator norm is the largest operator norm of any block. The eigenvalue of the $r$th block is at most $(1/s)\cdot \max\{ \|x^{(r)}\|_2^2, \|x^{(r)}\|_\infty^2\} \le 1/s$, and thus $\|A_{x,\eta}\| \le 1/s$ with probability $1$.
+
+Next, define $Q_{i,j} = \sum_{r=1}^m \eta_{r,i} \eta_{r,j}$ so that
+$$
+\|A_{x,\eta}\|_F^2 = \frac 1{s^2} \sum_{i\neq j} x_i^2 x_j^2 \cdot Q_{i,j} .
+$$
+We will show for $p \simeq s^2/m$ that for all $i, j$, $\|Q_{i,j}\|_p \lesssim p$, where we take the $p$-norm over $\eta$. Therefore for this $p$,
+\allowdisplaybreaks
+\begin{align*}
+\|\|A_{x,\eta}\|_F\|_p &= \|\|A_{x,\eta}\|_F^2\|_{p/2}^{1/2}\\
+{}&\le\|\frac 1{s^2} \sum_{i\neq j} x_i^2 x_j^2\cdot Q_{i,j}\|_p^{1/2}\\
+{}&\le \frac 1{s} \left(\sum_{i\neq j} x_i^2 x_j^2\cdot \|Q_{i,j}\|_p\right)^{1/2}\text{ (triangle inequality)}\\
+{}&\le \frac 1{\sqrt{m}}
+\end{align*}
+Then by Markov's inequality and the settings of $p, s, m$,
+$$
+\Pr(|\|\Pi x\|_2^2 - 1| > \eps) = \Pr(|\sigma^T A_{x,\eta}\sigma| > \eps) < \eps^{-p}\cdot C^p(m^{-p/2} + s^{-p}) < \delta .
+$$
+
+We now show $\|Q_{i,j}\|_p \lesssim p$, for which we use Bernstein's inequality.
+
+Suppose $\eta_{a_1,i}, \ldots, \eta_{a_s, i}$ are all $1$, where $a_1 < a_2 < \ldots < a_s$. Now, note $Q_{i,j}$ can be written as $\sum_{t=1}^s Y_t$, where $Y_t$ is an indicator random variable for the event that $\eta_{a_t, j} = 1$. The $Y_t$ are not independent, but for any integer $p\ge 1$ their $p$th moment is upper bounded by the case that the $Y_t$ are independent Bernoulli each of expectation $s/m$ (this can be seen by simply expanding $(\sum_t Y_t)^p$ then comparing with the independent Bernoulli case monomial by monomial in the expansion). Thus Bernstein applies, and as desired we have
+$$
+\|Q_{i,j}\|_p = \|\sum_t Y_t\|_p \lesssim \sqrt{s^2/m}\cdot \sqrt{p} + p \simeq p .
+$$
+\end{proof}
+
+There are two natural distributions where $\eta$ satisfies the conditions for the SJLT. In the first, the columns are independent, and for each column $i$ $(\eta_{1,i},\ldots,\eta_{m,i})$ is chosen uniformly at random from the $\binom{m}{s}$ vectors in $\{0,1\}^m$ having weight exactly $s$. A second distribution is the CountSketch of \cite{CharikarCF04}. In this distribution, we assume $s$ divides $m$, and the rows are partitioned arbitrarily into $s$ blocks each of equal size $m/s$ (e.g.\ the first $m/s$ rows, then the next $m/s$ rows, etc.). For each column $i$ and for each block $b$ with corresponding $\eta(b, i) = (\eta_{cm/s+1, i}, \ldots, \eta_{(c+1)m/s, i})$, we set $\eta(b, i) = e_j\in\R^{m/s}$ for a uniformly random $j\in[m/s]$. This is done independently across all $b, i$ pairs.
+
+\subsection{FFT-based approach}
+
+Another approach for obtaining fast JL was investigated by Ailon and Chazelle \cite{AilonC09}. This approach gives a running time to compute $\Pi x$ of roughly $O(n\log n)$, which is faster than the sparse JL approach when $x$ is sufficiently dense. Although we did not cover it this approach in lecture today, I am including a description here. They called their transformation the {\em Fast Johnson-Lindenstrauss Transform (FJLT)}. A construction similar to theirs, which we will analyze here, is the $m\times n$ matrix $\Pi$ defined as
+\begin{equation}
+\Pi = \frac 1{\sqrt{m}}SHD \EquationName{fjlt}
+\end{equation}
+where $S$ is an $m\times n$ sampling matrix with replacement (each row has a $1$ in a uniformly random location and zeroes elsewhere, and the rows are independent), $H$ is an {\em unnormalized bounded orthonormal system}, and $D= \mathop{diag}(\alpha)$ for a vector $\alpha$ of $n$ independent Rademachers. An unnormalized bounded orthonormal system is a matrix $H\in\R^{n\times n}$ such that $H^T H = I$ and $\max_{i,j} |H_{i,j}| \le 1$. For example, $H$ can be the unnormalized Fourier matrix or Hadamard matrix. The original FJLT replaced $S$ with a random sparse matrix $P$, which has certain advantages; see \Remark{useP}.
+
+The motivation for the construction \Eqsub{fjlt} is speed: $D$ can be applied in $O(n)$ time, $H$ in $O(n\log n)$ time (e.g.\ using the Fast Fourier Transform), and $S$ in $O(m)$ time. Thus, overall, applying $\Pi$ to any fixed vector $x$ takes $O(n\log n)$ time. Compare this with using a dense matrix of Rademachers, which takes $O(mn)$ time to apply.
+
+We will show that for $m\gtrsim \eps^{-2}\log(1/\delta)\log(1/(\eps\delta))$, the random $\Pi$ described in \Eqsub{fjlt} provides DJL. In fact we will analyze a slightly different construction in which $S$ is replaced by an $n\times n$ diagonal matrix $S_\eta$, $S_\eta = \mathop{diag}(\eta)$, where the entries of $\eta\in\{0,1\}^n$ are independent with $\E \eta_i = 1/m$ (so $\Pi$ has $m$ rows in expectation). The proof to analyze the $\Pi$ from \Eqsub{fjlt} is essentially identical. The proof we provide here is an adaptation of the proof of a more general theorem \cite[Theorem 9]{CohenNW15} to the current scenario.
+
+\begin{theorem}\TheoremName{fjlt}
+Let $x\in\R^n$ be an arbitrary unit norm vector, and suppose $0 < \eps, \delta < 1/2$. Also let $\Pi = S_\eta H D$ as described above with a number of rows equal to $m\gtrsim \eps^{-2}\log(1/\delta)\log(1/(\eps\delta))$. Then
+$$
+\Pr_\Pi(| \|\Pi x\|_2^2 - 1 | > \eps ) < \delta .
+$$
+\end{theorem}
+\begin{proof}
+We use the moment method. Let $\eta'$ be an independent copy of $\eta$, and let $\sigma\in\{-1,1\}^n$ be uniformly random. Write $z = HDx$ so that $\|\Pi x\|_2^2 = \sum_i \eta_i z_i^2$. Then
+\allowdisplaybreaks
+\begin{align}
+\|\frac 1m\sum_{i=1}^n \eta_i z_i^2 - 1\|_p &= \|\|\frac 1m\sum_i \eta_i z_i^2 - 1\|_{L^p(\eta)}\|_{L^p(\alpha)} \EquationName{sqrtfjlt1}\\
+\nonumber {} &\le \frac 2m\cdot \|\|\sum_i \sigma_i \eta_i z_i^2\|_{L^p(\eta)}\|_{L^p(\alpha)}\text{ (symmetrization)}\\
+\nonumber {} &\le \frac 2m\cdot \|\sum_i \sigma_i \eta_i z_i^2\|_p\\
+\nonumber {}&\lesssim \frac{\sqrt{p}}m\cdot \|(\sum_i \eta_i z_i^4)^{1/2}\|_p \text{ (Khintchine)}\\
+\nonumber {}&\le \frac{\sqrt{p}}m\cdot \|(\max_i \eta_i |z_i|) \cdot (\sum_i \eta_i z_i^2)^{1/2}\|_p\\
+\nonumber {}&\le \frac{\sqrt{p}}m\cdot \|\max_i \eta_i z_i^2\|_p^{1/2} \cdot \|\sum_i \eta_i z_i^2\|_p^{1/2}\text{ (Cauchy-Schwarz)}\\
+{}&\le \sqrt{\frac pm} \cdot \|\max_i \eta_i z_i^2\|_p^{1/2} \cdot (\|\frac 1m\sum_i \eta_i z_i^2 - 1\|_p^{1/2} + 1)\text{ (triangle inequality)} \EquationName{sqrtfjlt2}
+\end{align}
+
+We will now bound $\|\max_i \eta_i z_i^2\|_p^{1/2}$. Define $q = \max\{p, \log m\}$ and note $\|\cdot\|_p \le \|\cdot\|_q$. Then
+\begin{align}
+\nonumber \|\max_i \eta_i z_i^2\|_q &= \left(\E_{\alpha, \eta}\max_i \eta_i z_i^{2q}\right)^{1/q}\\
+\nonumber &\le \left(\E_{\alpha, \eta}\sum_i \eta_i z_i^{2q}\right)^{1/q} \\
+\nonumber &= \left(\sum_i \E_{\alpha, \eta} \eta_i z_i^{2q}\right)^{1/q} \\
+\nonumber &\le \left(n\cdot \max_i \E_{\alpha, \eta} \eta_i z_i^{2q}\right)^{1/q} \\
+\nonumber &= \left(n\cdot \max_i (\E_{\eta} \eta_i)\cdot (\E_\alpha z_i^{2q})\right)^{1/q} \text{ (}\alpha, \eta\text{ independent)}\\
+\nonumber &= \left(m\cdot \max_i \E_\alpha z_i^{2q}\right)^{1/q}\\
+\nonumber {}&\le 2\cdot \max_i \| z_i^2 \|_q\text{ (}m^{1/q} \le 2\text{ by choice of }q\text{)}\\
+\nonumber {}&= 2\cdot \max_i\|z_i\|_{2q}^2\\
+{}&\lesssim q \text{ (Khintchine)} \EquationName{needbos}
+\end{align}
+\Equation{needbos} uses that $H$ is an unnormalized bounded orthonormal system.
+
+Defining $E = \|\frac 1m\sum_i \eta_i z_i^2 - 1\|_p^{1/2}$ and combining \Eqsub{sqrtfjlt1}, \Eqsub{sqrtfjlt2}, \Eqsub{needbos}, we find that for some constant $C>0$
+$$
+E^2 - C\sqrt{\frac{pq}m}E - C\sqrt{\frac{pq}m} \le 0 ,
+$$
+implying $E^2\lesssim \max\{\sqrt{pq/m}, pq/m\}$. By the Markov inequality
+$$
+\Pr(|\|\Pi x\|_2^2 - 1| > \eps) \le \eps^{-p}\cdot E^{2p} ,
+$$
+and thus to achieve the theorem statement it suffices to set $p = \log(1/\delta)$ then choose $m\gtrsim \eps^{-2}\log(1/\delta)\log(m/\delta)$.
+\end{proof}
+
+\begin{remark}\RemarkName{useP}
+\textup{
+Note that the FJLT as analyzed above provides suboptimal $m$. If one desired optimal $m$, one can instead use the embedding matrix $\Pi' \Pi$,where $\Pi$ is the FJLT and $\Pi'$ is, say, a dense matrix with Rademacher entries having the optimal $m' = O(\eps^{-2}\log(1/\delta))$ rows. The downside is that the runtime to apply our embedding worsens by an additive $m\cdot m'$. \cite{AilonC09} slightly improved this additive term (by an $\eps^2$ multiplicative factor) by replacing the matrix $S$ with a random sparse matrix $P$.
+}
+\end{remark}
+
+\begin{remark}
+\textup{
+The usual analysis for the FJLT, such as the approach in \cite{AilonC09}, would achieve a bound on $m$ of $O(\eps^{-2}\log(1/\delta)\log(n/\delta))$. Such analyses operate by, using the notation of the proof of \Theorem{fjlt}, first conditioning on $\|z\|_\infty \lesssim \sqrt{\log(n/\delta)}$ (which happens with probability at least $1-\delta/2$ by the Khintchine inequality), then finishing the proof using Bernstein's inequality. In our proof above, we improved this dependence on $n$ to a dependence on the smaller quantity $m$ by avoiding any such conditioning.
+}
+\end{remark}
+
+
+\bibliographystyle{alpha}
+\bibliography{../biblio}
+
+\end{document}
