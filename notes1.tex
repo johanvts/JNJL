@@ -60,7 +60,9 @@
 
 Here we collect some notation and basic lemmas used throughout this note.
 
-Throughout, for a random variable $X$, $\|X\|_p$ denotes $(\E|X|^p)^{1/p}$. It is known that $\|\cdot\|_p$ is a norm for any $p\ge 1$ (Minkowski's inequality). It is also known $\|X\|_p \le \|X\|_q$ whenever $p\le q$. Henceforth, whenever we discuss $\|\cdot\|_p$, we will assume $p\ge 1$.
+Throughout, for a random variable $X$, $\|X\|_p$ denotes $(\E|X|^p)^{1/p}$.
+It is known that $\|\cdot\|_p$ is a norm for any $p\ge 1$ (Minkowski's inequality).
+It is also known $\|X\|_p \le \|X\|_q$ whenever $p\geq q$. Henceforth, whenever we discuss $\|\cdot\|_p$, we will assume $p\ge 1$.
 
 \begin{lemma}[Khintchine inequality]
 For any $p\ge 1$, $x\in\R^n$, and $(\sigma_i)$ independent Rademachers,
@@ -96,10 +98,11 @@ Then 1a is equivalent to 1b, 2a is equivalent to 2b, and 3a is equivalent to 3b,
 We will show only that 1a is equivalent to 1b; the other cases are argued identically.
 
 To show that 1a implies 1b, by Markov's inequality
-$$
-\Pr(Z > \lambda) \le \lambda^{-p} \cdot \E|Z|^p \le \left(\frac{C_1^2 \sigma^2}{\lambda^2 p}\right)^{p/2} .
-$$
-Statement 1b follows by choosing $p = \max\{1, 2C_1^2\lambda^2/\sigma^2\}$.
+\[
+\Pr(|Z| > \lambda) \le  \frac {\E|Z|^p}{\lambda^p} \le \left(\frac{C_1^2 \sigma^2p}{\lambda^2}\right)^{p/2}\leq e^{-\frac{\ln 2}{4C_1}\frac{\lambda^2}{\sigma^2}}.
+\]
+
+By choosing $p = \max\{1, \lambda^2/(2C_1^2\sigma^2)\}$.
 
 To show that 1b implies 1a, by integration by parts we have
 $$
